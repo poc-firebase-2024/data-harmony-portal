@@ -10,7 +10,8 @@ const fetchDependencies = async (owner, tableName) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.text();
+  const data = await response.json();
+  return data.mermaid;
 };
 
 const Dependencies = () => {
