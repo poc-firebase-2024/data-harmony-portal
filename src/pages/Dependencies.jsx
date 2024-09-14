@@ -9,9 +9,13 @@ import JsonView from './JsonView';
 import TreeView from './TreeView';
 
 const fetchDependencies = async (owner, tableName, format) => {
+  if (!owner || !tableName) {
+    throw new Error('Owner and table_name are required');
+  }
   const response = await fetch(`http://localhost:9090/dependencies?owner=${owner}&table_name=${tableName}&format=${format}`);
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'An error occurred while fetching data');
   }
   return await response.json();
 };
@@ -27,11 +31,17 @@ const Dependencies = () => {
     queryKey: ['dependencies', owner, tableName, format],
     queryFn: () => fetchDependencies(owner, tableName, format),
     enabled: shouldFetch,
+    retry: false,
+    onError: () => {
+      setShouldFetch(false);
+    },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShouldFetch(true);
+    if (owner && tableName) {
+      setShouldFetch(true);
+    }
   };
 
   const renderVisualization = () => {
@@ -60,6 +70,7 @@ const Dependencies = () => {
             onChange={(e) => setOwner(e.target.value)}
             placeholder={t('owner')}
             className="flex-grow"
+            required
           />
           <Input
             type="text"
@@ -67,6 +78,7 @@ const Dependencies = () => {
             onChange={(e) => setTableName(e.target.value)}
             placeholder={t('tableName')}
             className="flex-grow"
+            required
           />
           <Select value={format} onValueChange={setFormat}>
             <SelectTrigger className="w-[180px]">
@@ -78,12 +90,12 @@ const Dependencies = () => {
               <SelectItem value="tree">{t('tree')}</SelectItem>
             </SelectContent>
           </Select>
-          <Button type="submit">{t('fetch')}</Button>
+          <Button type="submit" disabled={!owner || !tableName}>{t('fetch')}</Button>
         </div>
       </form>
 
       {isLoading && <p>{t('loading')}</p>}
-      {isError && <p>{t('error')}: {error.message}</p>}
+      {isError && <p className="text-red-500">{t('error')}: {error.message}</p>}
       {renderVisualization()}
     </div>
   );
