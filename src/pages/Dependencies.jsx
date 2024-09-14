@@ -2,33 +2,51 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
 import Mermaid from './Mermaid';
+import JsonView from './JsonView';
+import TreeView from './TreeView';
 
-const fetchDependencies = async (owner, tableName) => {
-  const response = await fetch(`http://localhost:9090/dependencies?owner=${owner}&table_name=${tableName}&format=mermaid`);
+const fetchDependencies = async (owner, tableName, format) => {
+  const response = await fetch(`http://localhost:9090/dependencies?owner=${owner}&table_name=${tableName}&format=${format}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  const data = await response.json();
-  return data.mermaid;
+  return await response.json();
 };
 
 const Dependencies = () => {
   const { t } = useTranslation();
   const [owner, setOwner] = useState('');
   const [tableName, setTableName] = useState('');
+  const [format, setFormat] = useState('mermaid');
   const [shouldFetch, setShouldFetch] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['dependencies', owner, tableName],
-    queryFn: () => fetchDependencies(owner, tableName),
+    queryKey: ['dependencies', owner, tableName, format],
+    queryFn: () => fetchDependencies(owner, tableName, format),
     enabled: shouldFetch,
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setShouldFetch(true);
+  };
+
+  const renderVisualization = () => {
+    if (!data) return null;
+
+    switch (format) {
+      case 'mermaid':
+        return <Mermaid chart={data.mermaid} />;
+      case 'json':
+        return <JsonView data={data} />;
+      case 'tree':
+        return <TreeView data={data} />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -50,13 +68,23 @@ const Dependencies = () => {
             placeholder={t('tableName')}
             className="flex-grow"
           />
+          <Select value={format} onValueChange={setFormat}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={t('selectFormat')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mermaid">{t('mermaid')}</SelectItem>
+              <SelectItem value="json">{t('json')}</SelectItem>
+              <SelectItem value="tree">{t('tree')}</SelectItem>
+            </SelectContent>
+          </Select>
           <Button type="submit">{t('fetch')}</Button>
         </div>
       </form>
 
       {isLoading && <p>{t('loading')}</p>}
       {isError && <p>{t('error')}: {error.message}</p>}
-      {data && <Mermaid chart={data} />}
+      {renderVisualization()}
     </div>
   );
 };
