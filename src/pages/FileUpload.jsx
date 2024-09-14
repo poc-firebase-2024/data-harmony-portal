@@ -14,15 +14,14 @@ const FileUpload = () => {
     setFile(file);
   };
 
-  const handleUpload = async () => {
-    if (!dbaTablesFile || !dbaConstraintsFile) {
-      toast.error(t('pleaseSelectBothFiles'));
+  const handleUpload = async (file, fileType) => {
+    if (!file) {
+      toast.error(t('pleaseSelectFile', { fileType }));
       return;
     }
 
-    // For now, we're only uploading DBA_CONSTRAINTS
     const formData = new FormData();
-    formData.append('file', dbaConstraintsFile);
+    formData.append('file', file);
 
     try {
       const response = await fetch('http://localhost:9090/upload', {
@@ -31,13 +30,13 @@ const FileUpload = () => {
       });
 
       if (response.ok) {
-        toast.success(t('uploadSuccess'));
+        toast.success(t('uploadSuccess', { fileType }));
       } else {
         const errorData = await response.json();
-        toast.error(t('uploadError', { error: errorData.error }));
+        toast.error(t('uploadError', { error: errorData.error, fileType }));
       }
     } catch (error) {
-      toast.error(t('uploadError', { error: error.message }));
+      toast.error(t('uploadError', { error: error.message, fileType }));
     }
   };
 
@@ -47,21 +46,28 @@ const FileUpload = () => {
       <div className="space-y-4">
         <div>
           <label className="block mb-2">{t('dbaTablesFile')}</label>
-          <Input
-            type="file"
-            onChange={(e) => handleFileChange(e, setDbaTablesFile)}
-            accept=".csv"
-          />
+          <div className="flex space-x-2">
+            <Input
+              type="file"
+              onChange={(e) => handleFileChange(e, setDbaTablesFile)}
+              accept=".csv"
+              className="flex-grow"
+            />
+            <Button onClick={() => handleUpload(dbaTablesFile, t('dbaTablesFile'))}>{t('upload')}</Button>
+          </div>
         </div>
         <div>
           <label className="block mb-2">{t('dbaConstraintsFile')}</label>
-          <Input
-            type="file"
-            onChange={(e) => handleFileChange(e, setDbaConstraintsFile)}
-            accept=".csv"
-          />
+          <div className="flex space-x-2">
+            <Input
+              type="file"
+              onChange={(e) => handleFileChange(e, setDbaConstraintsFile)}
+              accept=".csv"
+              className="flex-grow"
+            />
+            <Button onClick={() => handleUpload(dbaConstraintsFile, t('dbaConstraintsFile'))}>{t('upload')}</Button>
+          </div>
         </div>
-        <Button onClick={handleUpload}>{t('upload')}</Button>
       </div>
     </div>
   );
