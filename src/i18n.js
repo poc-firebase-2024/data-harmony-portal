@@ -23,6 +23,8 @@ i18n
           fetch: 'Fetch',
           loading: 'Loading...',
           error: 'Error',
+          zoomIn: 'Zoom In',
+          zoomOut: 'Zoom Out',
         },
       },
       pt: {
@@ -43,6 +45,8 @@ i18n
           fetch: 'Buscar',
           loading: 'Carregando...',
           error: 'Erro',
+          zoomIn: 'Aumentar Zoom',
+          zoomOut: 'Diminuir Zoom',
         },
       },
     },
