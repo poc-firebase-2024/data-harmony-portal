@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, User } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import LoginPopup from './LoginPopup';
+import { Link } from 'react-router-dom';
+import { navItems } from '../nav-items';
 
 const Header = () => {
   const { t } = useTranslation();
@@ -19,9 +21,18 @@ const Header = () => {
         </SheetTrigger>
         <SheetContent side="left">
           <nav>
-            <ul>
-              <li><a href="/">{t('home')}</a></li>
-              <li><a href="/dependencies">{t('dependencies')}</a></li>
+            <ul className="space-y-2">
+              {navItems.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className="flex items-center space-x-2 p-2 rounded hover:bg-secondary"
+                  >
+                    {item.icon}
+                    <span>{t(item.title.toLowerCase())}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </SheetContent>
