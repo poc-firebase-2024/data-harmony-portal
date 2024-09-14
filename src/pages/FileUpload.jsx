@@ -3,23 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const FileUpload = () => {
   const { t } = useTranslation();
   const [dbaTablesFile, setDbaTablesFile] = useState(null);
   const [dbaConstraintsFile, setDbaConstraintsFile] = useState(null);
+  const [isUploadingTables, setIsUploadingTables] = useState(false);
+  const [isUploadingConstraints, setIsUploadingConstraints] = useState(false);
 
   const handleFileChange = (event, setFile) => {
     const file = event.target.files[0];
     setFile(file);
   };
 
-  const handleUpload = async (file, fileType) => {
+  const handleUpload = async (file, fileType, setIsUploading) => {
     if (!file) {
       toast.error(t('pleaseSelectFile', { fileType }));
       return;
     }
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
 
@@ -37,6 +41,8 @@ const FileUpload = () => {
       }
     } catch (error) {
       toast.error(t('uploadError', { error: error.message, fileType }));
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -53,7 +59,15 @@ const FileUpload = () => {
               accept=".csv"
               className="flex-grow"
             />
-            <Button onClick={() => handleUpload(dbaTablesFile, t('dbaTablesFile'))}>{t('upload')}</Button>
+            <Button 
+              onClick={() => handleUpload(dbaTablesFile, t('dbaTablesFile'), setIsUploadingTables)}
+              disabled={isUploadingTables}
+            >
+              {isUploadingTables ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {t('upload')}
+            </Button>
           </div>
         </div>
         <div>
@@ -65,7 +79,15 @@ const FileUpload = () => {
               accept=".csv"
               className="flex-grow"
             />
-            <Button onClick={() => handleUpload(dbaConstraintsFile, t('dbaConstraintsFile'))}>{t('upload')}</Button>
+            <Button 
+              onClick={() => handleUpload(dbaConstraintsFile, t('dbaConstraintsFile'), setIsUploadingConstraints)}
+              disabled={isUploadingConstraints}
+            >
+              {isUploadingConstraints ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {t('upload')}
+            </Button>
           </div>
         </div>
       </div>
