@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
-import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { Slider } from "@/components/ui/slider";
 import { useTranslation } from 'react-i18next';
 
 const Mermaid = ({ chart }) => {
   const mermaidRef = useRef(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(100);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -27,31 +26,30 @@ const Mermaid = ({ chart }) => {
 
   const applyZoom = () => {
     if (mermaidRef.current) {
-      mermaidRef.current.style.transform = `scale(${zoom})`;
+      mermaidRef.current.style.transform = `scale(${zoom / 100})`;
       mermaidRef.current.style.transformOrigin = 'top left';
     }
   };
 
-  const handleZoomIn = () => {
-    setZoom(prevZoom => Math.min(prevZoom + 0.1, 2));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5));
+  const handleZoomChange = (newZoom) => {
+    setZoom(newZoom[0]);
   };
 
   return (
     <div>
-      <div className="mb-4 flex justify-end space-x-2">
-        <Button onClick={handleZoomIn} title={t('zoomIn')}>
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button onClick={handleZoomOut} title={t('zoomOut')}>
-          <ZoomOut className="h-4 w-4" />
-        </Button>
+      <div className="mb-4 flex items-center space-x-4">
+        <Slider
+          value={[zoom]}
+          onValueChange={handleZoomChange}
+          min={50}
+          max={200}
+          step={10}
+          className="w-64"
+        />
+        <span>{zoom}%</span>
       </div>
-      <div className="overflow-auto">
-        <div ref={mermaidRef} className="mermaid inline-block"></div>
+      <div className="overflow-auto border rounded-lg" style={{ maxHeight: '70vh', maxWidth: '100%' }}>
+        <div ref={mermaidRef} className="mermaid inline-block min-w-full min-h-full"></div>
       </div>
     </div>
   );
